@@ -30,7 +30,7 @@ class Page
     # path provided to sinatra
     def locate(*args)
       # TODO this will be a security hole, since ../ will likely work
-      File.expand_path(File.join(repo.path, '..', 'pages', args[0]))
+      File.expand_path(File.join(repo, 'pages', args[0] + '.md'))
     end
 
     def post_attr_accessor(*syms)
