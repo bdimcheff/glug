@@ -6,9 +6,8 @@ require 'spec'
 # command-line options
 ARGV.clear
 
-require 'sinatra'
 require 'sinatra/test/rspec'
-require 'site'
+require 'glug'
 
 Spec::Runner.configure do |config|
   config.mock_with :flexmock

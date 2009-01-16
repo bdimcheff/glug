@@ -1,3 +1,3 @@
-require 'site'
+require 'glug'
 
 run Glug
