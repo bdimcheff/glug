@@ -82,17 +82,14 @@ end
 
 class Glug < Sinatra::Base 
   configure do
-    repo = File.expand_path(File.join(File.dirname(__FILE__), 'repo'))
-    
-    begin
-      Page.repo = Grit::Repo.new(repo)
-    rescue Grit::InvalidGitRepositoryError, Grit::NoSuchPathError
-      abort "#{repo}: Not a git repository. Install your wiki with `rake bootstrap`"
-    end
-    
-    set :views, File.join(repo, 'templates')  
+    set :views, lambda { File.join(repo, 'templates') }
   end
 
+  def initialize
+    super
+    Page.repo = self.class.repo
+  end
+  
   get '/' do
     haml :index
   end
