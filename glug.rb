@@ -75,7 +75,7 @@ class Post < Page
     def locate(*args)
       year, month, day, slug = args
 
-      File.expand_path(File.join(Page.repo.path, '..', 'posts', year, month, day, slug))
+      File.expand_path(File.join(Page.repo, 'posts', year, month, day, slug + '.md'))
     end
   end
 end
