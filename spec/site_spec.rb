@@ -65,6 +65,51 @@ EOF
       page.attributes['baz'].should == ['quux']
     end
   end
+
+  describe '#title' do
+    it 'loads the title from the attributes' do
+      data = <<EOF
+---
+title: foo
+---
+content
+EOF
+
+      page = Page.new(data)
+      page.title.should == 'foo'
+    end
+
+    it 'returns nil if there is no title in the attributes' do
+      data = <<EOF
+---
+foo: bar
+---
+content
+EOF
+      page = Page.new(data)
+      page.title.should be_nil
+    end
+  end
+
+  describe '.attr_method' do
+    it 'should create the proper methods' do
+      data = <<EOF
+---
+foo: bar
+baz: quux
+---
+content
+EOF
+      
+      klass = Class.new(Page) do
+        post_attr_accessor :foo
+      end
+
+      page = klass.new(data)
+
+      page.foo.should == 'bar'
+    end
+  end
 end
 
 describe 'Post' do

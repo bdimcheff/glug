@@ -2,10 +2,9 @@ require 'rubygems'
 gem 'mojombo-grit'
 gem 'bmizerany-sinatra'
 
-require 'sinatra'
+require 'sinatra/base'
 require 'grit'
 
-set :repo, File.expand_path(File.join(File.dirname(__FILE__), 'repo'))
 
 class PageNotFound < Sinatra::NotFound
   attr_reader :name
@@ -33,10 +32,18 @@ class Page
       # TODO this will be a security hole, since ../ will likely work
       File.expand_path(File.join(repo.path, '..', 'pages', args[0]))
     end
+
+    def post_attr_accessor(*syms)
+      syms.each do |sym|
+        define_method(sym) { attributes[sym.to_s] }
+        define_method("#{sym}=") { |v| attributes[sym.to_s] = v }
+      end
+    end
   end
 
   attr_accessor :attributes, :content
-  
+  post_attr_accessor :title, :author, :date, :category, :tags
+
   def initialize(raw_content = '')
     self.content = ''
     self.attributes = {}
@@ -73,41 +80,40 @@ class Post < Page
   end
 end
 
-configure do
-  begin
-    Page.repo = Grit::Repo.new(Sinatra.options.repo)
-  rescue Grit::InvalidGitRepositoryError, Grit::NoSuchPathError
-    abort "#{Sinatra.options.repo}: Not a git repository. Install your wiki with `rake bootstrap`"
+class Glug < Sinatra::Base 
+  configure do
+    repo = File.expand_path(File.join(File.dirname(__FILE__), 'repo'))
+    
+    begin
+      Page.repo = Grit::Repo.new(repo)
+    rescue Grit::InvalidGitRepositoryError, Grit::NoSuchPathError
+      abort "#{repo}: Not a git repository. Install your wiki with `rake bootstrap`"
+    end
+    
+    set :views, File.join(repo, 'templates')  
   end
 
-  set :views, File.join(Sinatra.options.repo, 'templates')
-end
+  get '/' do
+    haml :index
+  end
 
-helpers do
-  def title
-    @title
+  get '/foo' do
+    Sinatra.options.repo
+  end
+
+  get '/p/:page' do
+    @page = Page.find(params[:page])
+    
+    haml :page
+  end
+
+  get %r!^/b/(\d{4})/(\d{2})/(\d{2})/(.*)$! do
+    @page = Post.find(*params[:captures])
+    
+    haml :post
   end
 end
 
-get '/' do
-  haml :index
+if __FILE__ == $0
+  Glug.run!
 end
-
-get '/foo' do
-  Sinatra.options.repo
-end
-
-get '/p/:page' do
-  @page = Page.find(params[:page])
-  @title = @page.attributes['title']
-  
-  haml :page
-end
-
-get %r!^/b/(\d{4})/(\d{2})/(\d{2})/(.*)$! do
-  @page = Post.find(*params[:captures])
-  @title = @page.attributes['title']
-  
-  haml :post
-end
-
