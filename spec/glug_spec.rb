@@ -90,7 +90,7 @@ EOF
     end
   end
 
-  describe '.attr_method' do
+  describe '.page_attr_accessor' do
     it 'should create the proper methods' do
       data = <<EOF
 ---
@@ -101,7 +101,7 @@ content
 EOF
       
       klass = Class.new(Page) do
-        post_attr_accessor :foo
+        page_attr_accessor :foo
       end
 
       page = klass.new(data)

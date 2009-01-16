@@ -33,7 +33,7 @@ class Page
       File.expand_path(File.join(repo, 'pages', args[0] + '.md'))
     end
 
-    def post_attr_accessor(*syms)
+    def page_attr_accessor(*syms)
       syms.each do |sym|
         define_method(sym) { attributes[sym.to_s] }
         define_method("#{sym}=") { |v| attributes[sym.to_s] = v }
@@ -42,7 +42,7 @@ class Page
   end
 
   attr_accessor :attributes, :content
-  post_attr_accessor :title, :author, :date, :category, :tags
+  page_attr_accessor :title, :author, :date, :category, :tags
 
   def initialize(raw_content = '')
     self.content = ''
