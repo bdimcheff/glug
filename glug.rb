@@ -91,20 +91,22 @@ class Glug < Sinatra::Base
   end
   
   get '/' do
-    haml :index
+    @page.find('index')
+    
+    haml :page
   end
 
   get '/foo' do
     Sinatra.options.repo
   end
 
-  get '/p/:page' do
+  get '/:page' do
     @page = Page.find(params[:page])
     
     haml :page
   end
 
-  get %r!^/b/(\d{4})/(\d{2})/(\d{2})/(.*)$! do
+  get %r!^/(\d{4})/(\d{2})/(\d{2})/(.*)$! do
     @page = Post.find(*params[:captures])
     
     haml :post
