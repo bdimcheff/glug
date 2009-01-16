@@ -1,9 +1,9 @@
 require 'rubygems'
-gem 'mojombo-grit'
-gem 'bmizerany-sinatra'
+#gem 'mojombo-grit'
+gem 'bmizerany-sinatra', '>=0.8.9'
 
 require 'sinatra/base'
-require 'grit'
+#require 'grit'
 
 
 class PageNotFound < Sinatra::NotFound
