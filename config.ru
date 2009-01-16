@@ -1,3 +1,7 @@
+require 'rubygems'
+require 'sinatra/base'
 require 'glug'
 
-run Glug
+Glug.set :repo, File.expand_path(File.dirname(__FILE__))
+
+run Glug.new

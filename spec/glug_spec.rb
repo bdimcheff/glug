@@ -33,9 +33,9 @@ describe 'Page' do
 
   describe '.locate' do
     it 'returns files out of [repo]/pages' do
-      flexmock(Page, 'repo.path' => '/path/to/repo/.git')
+      flexmock(Page, :repo => '/path/to/repo/')
 
-      Page.send(:locate, 'testpage').should == '/path/to/repo/pages/testpage'
+      Page.send(:locate, 'testpage').should == '/path/to/repo/pages/testpage.md'
     end
   end
 
@@ -114,9 +114,9 @@ end
 describe 'Post' do
   describe '.locate' do
     it 'returns files out of [repo]/posts/YYYY/MM/DD/slug' do
-      flexmock(Page, 'repo.path' => '/path/to/repo/.git')
+      flexmock(Page, :repo => '/path/to/repo/')
 
-      Post.send(:locate, '2008', '01', '01', 'testpost').should == '/path/to/repo/posts/2008/01/01/testpost'
+      Post.send(:locate, '2008', '01', '01', 'testpost').should == '/path/to/repo/posts/2008/01/01/testpost.md'
     end
   end
 end
