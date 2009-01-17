@@ -109,6 +109,12 @@ EOF
       page.foo.should == 'bar'
     end
   end
+
+  describe '#content_html' do
+    it 'should convert markdown into html' do
+      Page.new('# h1').content_html.strip.should == '<h1>h1</h1>'
+    end
+  end
 end
 
 describe 'Post' do

@@ -3,6 +3,7 @@ require 'rubygems'
 gem 'bmizerany-sinatra', '>=0.8.9'
 
 require 'sinatra/base'
+require 'rdiscount'
 #require 'grit'
 
 
@@ -65,6 +66,12 @@ class Page
     end
   end
   
+  def content_html
+    md = ::Markdown.new(self.content)
+
+    md.to_html
+  end
+  
   def save
     
   end
@@ -80,7 +87,7 @@ class Post < Page
   end
 end
 
-class Glug < Sinatra::Base 
+class Glug < Sinatra::Base
   configure do
     set :views, lambda { File.join(repo, 'templates') }
   end
@@ -91,7 +98,7 @@ class Glug < Sinatra::Base
   end
   
   get '/' do
-    @page.find('index')
+    @page = Page.find('index')
     
     haml :page
   end
@@ -114,5 +121,6 @@ class Glug < Sinatra::Base
 end
 
 if __FILE__ == $0
+  Glug.set :repo, File.join(File.dirname(__FILE__), 'repo')
   Glug.run!
 end
