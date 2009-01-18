@@ -97,7 +97,7 @@ class Post < Page
   end
 end
 
-class Glug < Sinatra::Base
+class Glug < Sinatra::Application
   configure do
     set :views, lambda { File.join(repo, 'templates') }
   end
