@@ -39,6 +39,24 @@ describe 'Page' do
     end
   end
 
+  describe '.all' do
+    it 'returns all files in [repo]/pages' do
+      temp = File.expand_path(File.join(File.dirname(__FILE__), 'tmp'))
+      raise "Temporary directory already exists.  Aborting." if File.exist? temp
+      
+      FileUtils.mkdir_p(File.join(temp, 'pages'))
+      ['foo', 'bar', 'baz'].each do |f|
+        system("touch #{File.join(temp, 'pages', f)}")
+      end
+
+      flexmock(Page, :repo => temp)
+
+      Page.all.should have(3).pages
+      
+      FileUtils.rm_r(temp)
+    end
+  end
+
   describe '#parse' do
     it 'parses plain text into content' do
       data = <<EOF

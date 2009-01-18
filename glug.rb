@@ -25,6 +25,12 @@ class Page
       self.new(File.read(locate(*args)))
     end
 
+    def all
+      Dir.glob("#{basedir}/**/*").map do |f|
+        new(File.read(f))
+      end
+    end
+
     private
     
     # Constructs the full path to the requested file from a
