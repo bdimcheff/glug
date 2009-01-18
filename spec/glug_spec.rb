@@ -13,45 +13,47 @@ Spec::Runner.configure do |config|
   config.mock_with :flexmock
 end
 
-describe 'Page' do
+describe 'Glug::Page' do
   describe '.find' do    
     it 'finds the page that is returned by locate' do
       flexmock(File, :exist? => true)
-      flexmock(Page, :locate => 'foo')
+      flexmock(Glug::Page, :locate => 'foo')
       flexmock(File).should_receive(:read).with('foo').and_return('bar')
       
-      page = Page.find('post')
+      page = Glug::Page.find('post')
     end
 
-    it 'throws a PageNotFound exception if the file cannot be found' do
-      flexmock(Page, :locate => 'foo')
+    it 'throws a Glug::PageNotFound exception if the file cannot be found' do
+      flexmock(Glug::Page, :locate => 'foo')
       flexmock(File, :exist? => false)
 
-      lambda { Page.find('post') }.should raise_error(PageNotFound)
+      lambda { Glug::Page.find('post') }.should raise_error(Glug::PageNotFound)
     end
   end
 
   describe '.locate' do
     it 'returns files out of [repo]/pages' do
-      flexmock(Page, :repo => '/path/to/repo/')
+      flexmock(Glug::Page, :repo => '/path/to/repo/')
 
-      Page.send(:locate, 'testpage').should == '/path/to/repo/pages/testpage.md'
+      Glug::Page.send(:locate, 'testpage').should == '/path/to/repo/pages/testpage.md'
     end
   end
 
   describe '.all' do
     it 'returns all files in [repo]/pages' do
       temp = File.expand_path(File.join(File.dirname(__FILE__), 'tmp'))
-      raise "Temporary directory already exists.  Aborting." if File.exist? temp
+      #raise "Temporary directory already exists.  Aborting." if
+      #File.exist? temp
+      FileUtils.rm_r(temp) if File.exist? temp
       
       FileUtils.mkdir_p(File.join(temp, 'pages'))
       ['foo', 'bar', 'baz'].each do |f|
         system("touch #{File.join(temp, 'pages', f)}")
       end
 
-      flexmock(Page, :repo => temp)
+      flexmock(Glug::Page, :repo => temp)
 
-      Page.all.should have(3).pages
+      Glug::Page.all.should have(3).pages
       
       FileUtils.rm_r(temp)
     end
@@ -63,7 +65,7 @@ describe 'Page' do
 plain text test
 EOF
 
-      Page.new(data).content.strip.should == 'plain text test'
+      Glug::Page.new(data).content.strip.should == 'plain text test'
     end
 
     it 'parses yaml into attributes, the rest into content' do
@@ -74,7 +76,7 @@ baz: [quux]
 --- 
 text content
 EOF
-      page = Page.new(data)
+      page = Glug::Page.new(data)
       
       page.content.strip.should == 'text content'
       page.attributes.size.should == 2
@@ -92,7 +94,7 @@ title: foo
 content
 EOF
 
-      page = Page.new(data)
+      page = Glug::Page.new(data)
       page.title.should == 'foo'
     end
 
@@ -103,7 +105,7 @@ foo: bar
 ---
 content
 EOF
-      page = Page.new(data)
+      page = Glug::Page.new(data)
       page.title.should be_nil
     end
   end
@@ -118,7 +120,7 @@ baz: quux
 content
 EOF
       
-      klass = Class.new(Page) do
+      klass = Class.new(Glug::Page) do
         page_attr_accessor :foo
       end
 
@@ -130,23 +132,23 @@ EOF
 
   describe '#content_html' do
     it 'should convert markdown into html' do
-      Page.new('# h1').content_html.strip.should == '<h1>h1</h1>'
+      Glug::Page.new('# h1').content_html.strip.should == '<h1>h1</h1>'
     end
   end
 end
 
-describe 'Post' do
+describe 'Glug::Post' do
   describe '.locate' do
     it 'returns files out of [repo]/posts/YYYY/MM/DD/slug' do
-      flexmock(Page, :repo => '/path/to/repo/')
+      flexmock(Glug::Page, :repo => '/path/to/repo/')
 
-      Post.send(:locate, '2008', '01', '01', 'testpost').should == '/path/to/repo/posts/2008/01/01/testpost.md'
+      Glug::Post.send(:locate, '2008', '01', '01', 'testpost').should == '/path/to/repo/posts/2008/01/01/testpost.md'
     end
   end
 end
 
 def create_page(options = {})
-  p = Page.new
+  p = Glug::Page.new
 
  #p.
 end
