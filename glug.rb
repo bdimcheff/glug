@@ -1,6 +1,6 @@
 require 'rubygems'
 #gem 'mojombo-grit'
-gem 'bmizerany-sinatra', '>=0.8.9'
+gem 'bmizerany-sinatra', '>=0.9'
 
 require 'sinatra/base'
 require 'rdiscount'
