@@ -123,10 +123,13 @@ module Glug
   end
 
   class Application < Sinatra::Application
+
+    
     configure do
       set :views, lambda { File.join(repo, 'templates') }
+      set :public, lambda { File.join(repo, 'public') }
     end
-    
+
     def stylesheet(style = 'main')
       # TODO make this relative to the mount point of the app
       "/styles/#{style}.css"
@@ -171,5 +174,6 @@ end
 
 if __FILE__ == $0
   Glug::Application.set :repo, File.join(File.dirname(__FILE__), 'repo')
+  Glug::Application.set :app_file, $0
   Glug::Application.run!
 end
