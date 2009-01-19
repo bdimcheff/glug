@@ -4,6 +4,7 @@ gem 'bmizerany-sinatra', '>=0.8.9'
 
 require 'sinatra/base'
 require 'rdiscount'
+require 'sass'
 #require 'grit'
 
 module Glug
@@ -97,6 +98,21 @@ module Glug
       end
     end
   end
+  
+  #TODO refactor some page functionality into a Resource so we don't
+  #get a bunch of extra crap in style that isn't necessary
+  class Style < Page
+    class << self
+      def locate(*args)
+        File.expand_path(File.join(Page.repo, 'styles', args[0] + '.sass'))
+      end
+    end
+    
+    def content_css
+      engine = ::Sass::Engine.new(self.content)
+      engine.render
+    end
+  end
 
   class Application < Sinatra::Application
     configure do
@@ -136,7 +152,10 @@ module Glug
     end
 
     get '/styles/:style.css' do
+      style = Style.find(params[:style])
       
+      content_type 'text/css', :charset => 'utf-8'
+      style.content_css
     end
   end
 
