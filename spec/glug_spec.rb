@@ -33,7 +33,7 @@ describe 'Glug::Page' do
 
   describe '.locate' do
     it 'returns files out of [repo]/pages' do
-      flexmock(Glug::Page, :repo => '/path/to/repo/')
+      flexmock(Glug::Page, :basedir => '/path/to/repo/pages')
 
       Glug::Page.send(:locate, 'testpage').should == '/path/to/repo/pages/testpage.md'
     end
@@ -46,14 +46,14 @@ describe 'Glug::Page' do
           system("touch #{File.join(temp, 'pages', f)}.md")
         end
 
-        flexmock(Glug::Page, :repo => temp)
+        flexmock(Glug::Page, :basedir => temp)
 
         Glug::Page.all.should have(3).pages
       end
     end
   end
 
-  describe '#parse' do
+  describe '#transform' do
     it 'parses plain text into content' do
       data = <<EOF
 plain text test
@@ -129,12 +129,20 @@ EOF
       Glug::Page.new('# h1').content_html.strip.should == '<h1>h1</h1>'
     end
   end
+  
+  describe '#created_at' do
+    
+  end
+
+  describe '#updated_at' do
+    
+  end
 end
 
 describe 'Glug::Post' do
   describe '.locate' do
     it 'returns files out of [repo]/posts/YYYY/MM/DD/slug' do
-      flexmock(Glug::Page, :repo => '/path/to/repo/')
+      flexmock(Glug::Post, :basedir => '/path/to/repo/posts')
 
       Glug::Post.send(:locate, '2008', '01', '01', 'testpost').should == '/path/to/repo/posts/2008/01/01/testpost.md'
     end

@@ -5,6 +5,7 @@ gem 'bmizerany-sinatra', '>=0.9'
 require 'sinatra/base'
 require 'rdiscount'
 require 'sass'
+require 'metaid'
 #require 'grit'
 
 module Glug
@@ -17,7 +18,7 @@ module Glug
     end
   end
 
-  class Page
+  class Resource
     class << self
       attr_accessor :repo
       
@@ -26,12 +27,41 @@ module Glug
         
         self.new(File.read(locate(*args)))
       end
-
+      
       def all
         Dir.glob("#{basedir}/**/*.*").map do |f|
           new(File.read(f))
         end
       end
+
+      def set_basedir(dir)
+        @basedir = dir
+      end
+
+      def basedir
+        File.expand_path(File.join(Resource.repo, @basedir))
+      end
+
+      def page_attr_accessor(*syms)
+        syms.each do |sym|
+          define_method(sym) { attributes[sym.to_s] }
+          define_method("#{sym}=") { |v| attributes[sym.to_s] = v }
+        end
+      end
+    end
+
+    attr_accessor :content
+
+    def initialize(content = '')
+      self.content = content
+    end
+  end
+
+  class Page < Resource
+    set_basedir 'pages'
+    
+    class << self
+      attr_accessor :repo
 
       def recent(limit = 10)
         all.sort { |a, b| b.updated_at <=> a.updated_at }[0, limit]
@@ -45,27 +75,16 @@ module Glug
         # TODO this will be a security hole, since ../ will likely work
         File.expand_path(File.join(basedir, args[0] + '.md'))
       end
-
-      def basedir
-        File.expand_path(File.join(repo, 'pages'))
-      end
-
-      def page_attr_accessor(*syms)
-        syms.each do |sym|
-          define_method(sym) { attributes[sym.to_s] }
-          define_method("#{sym}=") { |v| attributes[sym.to_s] = v }
-        end
-      end
     end
 
-    attr_accessor :attributes, :content
+    attr_accessor :attributes
     page_attr_accessor :title, :author, :created_at, :updated_at, :category, :tags
 
     def initialize(raw_content = '')
-      self.content = ''
+      super(raw_content)
       self.attributes = {}
       
-      parse(raw_content)
+      transform(raw_content)
     end
     
     # Read the YAML frontmatter
@@ -73,9 +92,7 @@ module Glug
     # +name+ is the String filename of the file
     #
     # Returns nothing
-    def parse(raw_data)
-      self.content = raw_data
-      
+    def transform(raw_data)
       if self.content =~ /\A(---.*?)---(.*)/m
         self.attributes = YAML.load($1)
         self.content = $2
@@ -87,32 +104,26 @@ module Glug
 
       md.to_html
     end
-    
-    def save
-      
-    end
   end
 
   class Post < Page
+    set_basedir 'posts'
+    
     class << self
       def locate(*args)
         year, month, day, slug = args
 
         File.expand_path(File.join(basedir, year, month, day, slug + '.md'))
       end
-
-      def basedir(*args)
-        File.expand_path(File.join(Page.repo, 'posts'))
-      end
     end
   end
   
-  #TODO refactor some page functionality into a Resource so we don't
-  #get a bunch of extra crap in style that isn't necessary
-  class Style < Page
+  class Style < Resource
+    set_basedir 'styles'
+    
     class << self
       def locate(*args)
-        File.expand_path(File.join(Page.repo, 'styles', args[0] + '.sass'))
+        File.expand_path(File.join(basedir, args[0] + '.sass'))
       end
     end
     
@@ -123,8 +134,6 @@ module Glug
   end
 
   class Application < Sinatra::Application
-
-    
     configure do
       set :views, lambda { File.join(repo, 'templates') }
       set :public, lambda { File.join(repo, 'public') }
@@ -137,7 +146,7 @@ module Glug
     
     def initialize
       super
-      Page.repo = self.class.repo
+      Resource.repo = self.class.repo
     end
 
     def title
@@ -162,6 +171,7 @@ module Glug
     end
 
     get '/:page' do
+      puts "repo in action: #{Resource.repo}"
       @page = Page.find(params[:page])
       
       haml :page
@@ -186,5 +196,6 @@ end
 if __FILE__ == $0
   Glug::Application.set :repo, File.join(File.dirname(__FILE__), 'repo')
   Glug::Application.set :app_file, $0
+  Glug::Application.set :server, 'mongrel'
   Glug::Application.run!
 end
