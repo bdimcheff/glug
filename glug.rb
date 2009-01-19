@@ -139,11 +139,22 @@ module Glug
       super
       Page.repo = self.class.repo
     end
+
+    def title
+      title = 'brandon.dimcheff.com'
+      case 
+      when @page
+        title << " $$ #{@page.title}"
+      end
+      
+      title
+    end
     
     get '/' do
-      @page = Page.find('index')
-      
-      haml :page
+      @posts = Post.recent
+      @pages = Page.all
+
+      haml :index
     end
 
     get '/foo' do
