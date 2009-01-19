@@ -41,21 +41,15 @@ describe 'Glug::Page' do
 
   describe '.all' do
     it 'returns all files in [repo]/pages' do
-      temp = File.expand_path(File.join(File.dirname(__FILE__), 'tmp'))
-      #raise "Temporary directory already exists.  Aborting." if
-      #File.exist? temp
-      FileUtils.rm_r(temp) if File.exist? temp
-      
-      FileUtils.mkdir_p(File.join(temp, 'pages'))
-      ['foo', 'bar', 'baz'].each do |f|
-        system("touch #{File.join(temp, 'pages', f)}")
+      temp do |temp|
+        ['foo', 'bar', 'baz'].each do |f|
+          system("touch #{File.join(temp, 'pages', f)}.md")
+        end
+
+        flexmock(Glug::Page, :repo => temp)
+
+        Glug::Page.all.should have(3).pages
       end
-
-      flexmock(Glug::Page, :repo => temp)
-
-      Glug::Page.all.should have(3).pages
-      
-      FileUtils.rm_r(temp)
     end
   end
 
@@ -151,4 +145,15 @@ def create_page(options = {})
   p = Glug::Page.new
 
  #p.
+end
+
+def temp(&block)
+  temp = File.expand_path(File.join(File.dirname(__FILE__), 'tmp'))
+  FileUtils.rm_r(temp) if File.exist? temp
+  
+  FileUtils.mkdir_p(File.join(temp, 'pages'))
+  
+  yield temp
+
+  FileUtils.rm_r(temp)
 end
