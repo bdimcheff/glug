@@ -28,9 +28,13 @@ module Glug
       end
 
       def all
-        Dir.glob("#{basedir}/**/*").map do |f|
+        Dir.glob("#{basedir}/**/*.*").map do |f|
           new(File.read(f))
         end
+      end
+
+      def recent(limit = 10)
+        all.sort { |a, b| b.updated_at <=> a.updated_at }[0, limit]
       end
 
       private
@@ -55,7 +59,7 @@ module Glug
     end
 
     attr_accessor :attributes, :content
-    page_attr_accessor :title, :author, :date, :category, :tags
+    page_attr_accessor :title, :author, :created_at, :updated_at, :category, :tags
 
     def initialize(raw_content = '')
       self.content = ''
@@ -94,7 +98,11 @@ module Glug
       def locate(*args)
         year, month, day, slug = args
 
-        File.expand_path(File.join(Page.repo, 'posts', year, month, day, slug + '.md'))
+        File.expand_path(File.join(basedir, year, month, day, slug + '.md'))
+      end
+
+      def basedir(*args)
+        File.expand_path(File.join(Page.repo, 'posts'))
       end
     end
   end
