@@ -8,6 +8,15 @@ require 'sass'
 require 'metaid'
 #require 'grit'
 
+class Hash
+  def symbolize_keys
+    inject({}) do |options, (key, value)|
+      options[(key.to_sym rescue key) || key] = value
+      options
+    end
+  end
+end
+
 module Glug
 
   class PageNotFound < Sinatra::NotFound
@@ -59,8 +68,8 @@ module Glug
 
       def page_attr_accessor(*syms)
         syms.each do |sym|
-          define_method(sym) { attributes[sym.to_s] }
-          define_method("#{sym}=") { |v| attributes[sym.to_s] = v }
+          define_method(sym) { attributes[sym] }
+          define_method("#{sym}=") { |v| attributes[sym] = v }
         end
       end
     end
@@ -109,7 +118,7 @@ module Glug
     # Returns nothing
     def transform(raw_data)
       if self.content =~ /\A(---.*?)---(.*)/m
-        self.attributes = YAML.load($1)
+        self.attributes = YAML.load($1).symbolize_keys
         self.content = $2
       end
     end

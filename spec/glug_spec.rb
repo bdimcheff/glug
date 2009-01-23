@@ -74,8 +74,8 @@ EOF
       
       page.content.strip.should == 'text content'
       page.attributes.size.should == 2
-      page.attributes['foo'].should == 'bar'
-      page.attributes['baz'].should == ['quux']
+      page.attributes[:foo].should == 'bar'
+      page.attributes[:baz].should == ['quux']
     end
   end
 
