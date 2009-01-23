@@ -6,6 +6,7 @@ require 'sinatra/base'
 require 'rdiscount'
 require 'sass'
 require 'metaid'
+require 'extlib'
 #require 'grit'
 
 class Hash
@@ -102,17 +103,21 @@ module Glug
     end
 
     attr_accessor :attributes
-    page_attr_accessor :title, :author, :created_at, :updated_at, :category, :tags
+    page_attr_accessor :title, :author, :created_at, :updated_at, :category, :tags, :template
 
     def initialize(raw_content = '')
       super(raw_content)
       self.attributes = {}
-      
       transform(raw_content)
     end
 
     def updated_at
       attributes[:updated_at] || created_at
+    end
+
+    def template
+      attributes[:template].to_sym rescue nil ||
+        self.class.to_s.split('::').last.snake_case.to_sym
     end
     
     # Read the YAML frontmatter
@@ -224,13 +229,13 @@ module Glug
       puts "repo in action: #{Resource.repo}"
       @page = Page.find(params[:page])
       
-      haml :page
+      haml @page.template
     end
 
     get %r!^/(\d{4})/(\d{2})/(\d{2})/(.*)$! do
       @page = Post.find(*params[:captures])
       
-      haml :post
+      haml @page.template
     end
 
     get '/styles/:style.css' do

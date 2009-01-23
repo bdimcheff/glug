@@ -130,10 +130,6 @@ EOF
     end
   end
   
-  describe '#created_at' do
-    
-  end
-
   describe '#updated_at' do
     it 'should default to created_at if not present' do
       p = create_page
@@ -141,6 +137,32 @@ EOF
       p.created_at = t
 
       p.updated_at.should == t
+    end
+  end
+
+  describe '#template' do
+    it 'defaults to the class name' do
+      p = create_page
+      p.template.should == :page
+    end
+
+    it 'defaults to the class name for subclasses of Page' do
+      p = create_post
+      p.template.should == :post
+    end
+
+    it 'underscores camel-cased class names' do
+      FooBar = Class.new(Glug::Page)
+      foobar = FooBar.new
+
+      foobar.template.should == :foo_bar
+    end
+
+    it 'converts templates to symbols' do
+      p = create_page
+      p.template = 'foo'
+
+      p.template.should == :foo
     end
   end
 end
@@ -155,10 +177,14 @@ describe 'Glug::Post' do
   end
 end
 
-def create_page(options = {})
-  p = Glug::Page.new
+def create_page(content = '', options = {})
+  p = Glug::Page.new(content)
 
   p
+end
+
+def create_post(content = '', options = {})
+  Glug::Post.new(content)
 end
 
 def temp(&block)
