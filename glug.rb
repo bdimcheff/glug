@@ -18,6 +18,21 @@ module Glug
     end
   end
 
+  module Entry
+    class << self
+      attr_accessor :classes
+
+      def included(other)
+        self.classes ||= []
+        self.classes << other unless self.classes.include? other
+      end
+
+      def all
+        self.classes.map{ |klass| klass.all }.flatten!
+      end
+    end
+  end
+
   class Resource
     class << self
       attr_accessor :repo
@@ -107,6 +122,8 @@ module Glug
   end
 
   class Post < Page
+    include Entry
+    
     set_basedir 'posts'
     
     class << self
@@ -133,22 +150,7 @@ module Glug
     end
   end
 
-  class Application < Sinatra::Application
-    configure do
-      set :views, lambda { File.join(repo, 'templates') }
-      set :public, lambda { File.join(repo, 'public') }
-    end
-
-    def stylesheet(style = 'main')
-      # TODO make this relative to the mount point of the app
-      "/styles/#{style}.css"
-    end
-    
-    def initialize
-      super
-      Resource.repo = self.class.repo
-    end
-
+  module Helpers
     def title
       title = 'brandon.dimcheff.com'
       case 
@@ -158,10 +160,40 @@ module Glug
       
       title
     end
+
+    def verbose_time(time)
+      time.utc.strftime("%H:%M:%S on %B %d, %Y")
+    end
     
+    def stylesheet(style)
+      # TODO make this relative to the mount point of the app
+      "<link href='/stylesheets/#{style}.css' rel='stylesheet' type='text/css' />"
+    end
+
+    def sass(style)
+      "<link href='/styles/#{style}.css' rel='stylesheet' type='text/css' />"
+    end
+
+    def javascript(js)
+      "<script type='text/javascript' src='/javascripts/#{js}.js'></script>"
+    end
+  end
+
+  class Application < Sinatra::Application
+    include Helpers
+    
+    configure do
+      set :views, lambda { File.join(repo, 'templates') }
+      set :public, lambda { File.join(repo, 'public') }
+    end
+    
+    def initialize
+      super
+      Resource.repo = self.class.repo
+    end
+
     get '/' do
-      @posts = Post.recent
-      @pages = Page.all
+      @entries = Entry.all
 
       haml :index
     end
@@ -190,7 +222,6 @@ module Glug
       style.content_css
     end
   end
-
 end
 
 if __FILE__ == $0
