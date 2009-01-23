@@ -135,7 +135,13 @@ EOF
   end
 
   describe '#updated_at' do
-    
+    it 'should default to created_at if not present' do
+      p = create_page
+      t = Time.parse('2009-01-01 00:00:01Z')
+      p.created_at = t
+
+      p.updated_at.should == t
+    end
   end
 end
 
@@ -152,7 +158,7 @@ end
 def create_page(options = {})
   p = Glug::Page.new
 
- #p.
+  p
 end
 
 def temp(&block)

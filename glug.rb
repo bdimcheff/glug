@@ -110,6 +110,10 @@ module Glug
       
       transform(raw_content)
     end
+
+    def updated_at
+      attributes[:updated_at] || created_at
+    end
     
     # Read the YAML frontmatter
     # +base+ is the String path to the dir containing the file
@@ -120,6 +124,11 @@ module Glug
       if self.content =~ /\A(---.*?)---(.*)/m
         self.attributes = YAML.load($1).symbolize_keys
         self.content = $2
+
+        [:created_at, :updated_at].each do |field|
+          attr = self.attributes[field]
+          self.attributes[field] = Time.parse(attr) if attr
+        end
       end
     end
     
